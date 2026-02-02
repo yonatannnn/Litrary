@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { UserPlus, UserMinus } from 'lucide-react';
+import { UserPlus, UserMinus, Loader2 } from 'lucide-react';
 
 interface FollowButtonProps {
   userId: string;
@@ -24,7 +24,7 @@ export default function FollowButton({
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // Set loading immediately
     try {
       const method = isFollowing ? 'DELETE' : 'POST';
       const response = await fetch(`/api/users/${userId}/follow`, {
@@ -48,23 +48,20 @@ export default function FollowButton({
     <button
       onClick={handleFollow}
       disabled={loading}
-      className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 ${
+      className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
         isFollowing
           ? 'bg-gray-200 dark:bg-slate-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-slate-600'
           : 'bg-primary-600 text-white hover:bg-primary-700'
       }`}
     >
-      {isFollowing ? (
-        <>
-          <UserMinus className="h-4 w-4" />
-          <span>Unfollow</span>
-        </>
+      {loading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : isFollowing ? (
+        <UserMinus className="h-4 w-4" />
       ) : (
-        <>
-          <UserPlus className="h-4 w-4" />
-          <span>Follow</span>
-        </>
+        <UserPlus className="h-4 w-4" />
       )}
+      <span>{loading ? (isFollowing ? 'Unfollowing...' : 'Following...') : (isFollowing ? 'Unfollow' : 'Follow')}</span>
     </button>
   );
 }

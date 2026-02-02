@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Star } from 'lucide-react';
+import { Star, Loader2 } from 'lucide-react';
 
 interface RatingComponentProps {
   workId: string;
@@ -52,7 +52,7 @@ export default function RatingComponent({ workId }: RatingComponentProps) {
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // Set loading immediately
     try {
       const response = await fetch(`/api/works/${workId}/ratings`, {
         method: 'POST',
@@ -84,24 +84,28 @@ export default function RatingComponent({ workId }: RatingComponentProps) {
 
       <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-0 sm:space-x-2">
         <div className="flex items-center space-x-1 sm:space-x-2">
-          {[1, 2, 3, 4, 5].map((rating) => (
-            <button
-              key={rating}
-              onClick={() => handleRating(rating)}
-              onMouseEnter={() => setHoveredRating(rating)}
-              onMouseLeave={() => setHoveredRating(0)}
-              disabled={loading || !user}
-              className="focus:outline-none transition-transform hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <Star
-                className={`h-7 w-7 sm:h-8 sm:w-8 ${
-                  rating <= (hoveredRating || userRating || 0)
-                    ? 'fill-yellow-400 text-yellow-400'
-                    : 'text-slate-300 dark:text-slate-600'
-                }`}
-              />
-            </button>
-          ))}
+          {loading ? (
+            <Loader2 className="h-7 w-7 sm:h-8 sm:w-8 animate-spin text-primary-600" />
+          ) : (
+            [1, 2, 3, 4, 5].map((rating) => (
+              <button
+                key={rating}
+                onClick={() => handleRating(rating)}
+                onMouseEnter={() => setHoveredRating(rating)}
+                onMouseLeave={() => setHoveredRating(0)}
+                disabled={loading || !user}
+                className="focus:outline-none transition-transform hover:scale-110 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Star
+                  className={`h-7 w-7 sm:h-8 sm:w-8 ${
+                    rating <= (hoveredRating || userRating || 0)
+                      ? 'fill-yellow-400 text-yellow-400'
+                      : 'text-slate-300 dark:text-slate-600'
+                  }`}
+                />
+              </button>
+            ))
+          )}
         </div>
         <div className="sm:ml-4">
           {averageRating > 0 ? (
