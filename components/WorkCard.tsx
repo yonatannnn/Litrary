@@ -14,27 +14,27 @@ export default function WorkCard({ work }: WorkCardProps) {
 
   if (!work.author) {
     return (
-      <Link href={`/works/${work._id}`}>
-        <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-100 dark:border-slate-700 p-4 sm:p-6 h-full flex flex-col">
-          <div className="flex items-start justify-between mb-3">
-            <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center text-white text-sm font-semibold shadow-sm">
-                ?
-              </div>
-              <div>
-                <p className="font-semibold text-slate-900 dark:text-slate-100">
-                  Unknown Author
-                </p>
-                <p className="text-xs text-slate-600 dark:text-slate-400">
-                  @unknown
-                </p>
-              </div>
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-100 dark:border-slate-700 p-4 sm:p-6 h-full flex flex-col">
+        <div className="flex items-start justify-between mb-3">
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-slate-400 to-slate-500 flex items-center justify-center text-white text-sm font-semibold shadow-sm">
+              ?
             </div>
-            <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
-              {work.type === 'poem' ? 'Poem' : 'Short Story'}
-            </span>
+            <div>
+              <p className="font-semibold text-slate-900 dark:text-slate-100">
+                Unknown Author
+              </p>
+              <p className="text-xs text-slate-600 dark:text-slate-400">
+                @unknown
+              </p>
+            </div>
           </div>
+          <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
+            {work.type === 'poem' ? 'Poem' : 'Short Story'}
+          </span>
+        </div>
 
+        <Link href={`/works/${work._id}`} className="flex-grow flex flex-col">
           <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-50 mb-2 sm:mb-3 line-clamp-2 leading-tight">
             {work.title}
           </h2>
@@ -65,41 +65,44 @@ export default function WorkCard({ work }: WorkCardProps) {
               {formatDistanceToNow(new Date(work.createdAt), { addSuffix: true })}
             </span>
           </div>
-        </div>
-      </Link>
+        </Link>
+      </div>
     );
   }
 
   return (
-    <Link href={`/works/${work._id}`}>
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-100 dark:border-slate-700 p-4 sm:p-6 h-full flex flex-col">
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center space-x-2">
-            {work.author.avatar ? (
-              <img
-                src={work.author.avatar}
-                alt={work.author.displayName}
-                className="w-8 h-8 rounded-full ring-2 ring-slate-200 dark:ring-slate-700"
-              />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-sm font-semibold shadow-sm">
-                {work.author.displayName.charAt(0).toUpperCase()}
-              </div>
-            )}
-            <div>
-              <p className="font-semibold text-slate-900 dark:text-slate-100">
-                {work.author.displayName}
-              </p>
-              <p className="text-xs text-slate-600 dark:text-slate-400">
-                @{work.author.username}
-              </p>
+    <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm hover:shadow-lg transition-all duration-200 border border-gray-100 dark:border-slate-700 p-4 sm:p-6 h-full flex flex-col">
+      <div className="flex items-start justify-between mb-3">
+        <Link
+          href={`/profile/${work.author._id}`}
+          className="flex items-center space-x-2 hover:opacity-80 transition-opacity cursor-pointer"
+        >
+          {work.author.avatar ? (
+            <img
+              src={work.author.avatar}
+              alt={work.author.displayName}
+              className="w-8 h-8 rounded-full ring-2 ring-slate-200 dark:ring-slate-700"
+            />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-sm font-semibold shadow-sm">
+              {work.author.displayName.charAt(0).toUpperCase()}
             </div>
+          )}
+          <div>
+            <p className="font-semibold text-slate-900 dark:text-slate-100">
+              {work.author.displayName}
+            </p>
+            <p className="text-xs text-slate-600 dark:text-slate-400">
+              @{work.author.username}
+            </p>
           </div>
-          <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
-            {work.type === 'poem' ? 'Poem' : 'Short Story'}
-          </span>
-        </div>
+        </Link>
+        <span className="px-3 py-1 text-xs font-medium rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
+          {work.type === 'poem' ? 'Poem' : 'Short Story'}
+        </span>
+      </div>
 
+      <Link href={`/works/${work._id}`} className="flex-grow flex flex-col">
         <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-50 mb-2 sm:mb-3 line-clamp-2 leading-tight">
           {work.title}
         </h2>
@@ -130,8 +133,8 @@ export default function WorkCard({ work }: WorkCardProps) {
             {formatDistanceToNow(new Date(work.createdAt), { addSuffix: true })}
           </span>
         </div>
-      </div>
-    </Link>
+      </Link>
+    </div>
   );
 }
 
