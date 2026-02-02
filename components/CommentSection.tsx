@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
-import { Send, Trash2, Edit } from 'lucide-react';
+import { Send, Trash2, Edit, Loader2 } from 'lucide-react';
 
 interface Comment {
   _id: string;
@@ -29,6 +29,8 @@ export default function CommentSection({ workId }: CommentSectionProps) {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [loading, setLoading] = useState(false);
+  const [deletingCommentId, setDeletingCommentId] = useState<string | null>(null);
+  const [submittingReplyId, setSubmittingReplyId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchComments();
@@ -50,7 +52,7 @@ export default function CommentSection({ workId }: CommentSectionProps) {
     e.preventDefault();
     if (!user || !token || !newComment.trim()) return;
 
-    setLoading(true);
+    setLoading(true); // Set loading immediately
     try {
       const response = await fetch(`/api/works/${workId}/comments`, {
         method: 'POST',
@@ -75,7 +77,7 @@ export default function CommentSection({ workId }: CommentSectionProps) {
   const handleSubmitReply = async (parentId: string) => {
     if (!user || !token || !replyContent.trim()) return;
 
-    setLoading(true);
+    setSubmittingReplyId(parentId); // Set loading immediately
     try {
       const response = await fetch(`/api/works/${workId}/comments`, {
         method: 'POST',
@@ -94,13 +96,14 @@ export default function CommentSection({ workId }: CommentSectionProps) {
     } catch (error) {
       console.error('Error posting reply:', error);
     } finally {
-      setLoading(false);
+      setSubmittingReplyId(null);
     }
   };
 
   const handleDeleteComment = async (commentId: string) => {
     if (!token || !confirm('Delete this comment?')) return;
 
+    setDeletingCommentId(commentId); // Set loading immediately
     try {
       const response = await fetch(`/api/comments/${commentId}`, {
         method: 'DELETE',
@@ -114,6 +117,8 @@ export default function CommentSection({ workId }: CommentSectionProps) {
       }
     } catch (error) {
       console.error('Error deleting comment:', error);
+    } finally {
+      setDeletingCommentId(null);
     }
   };
 
@@ -137,8 +142,12 @@ export default function CommentSection({ workId }: CommentSectionProps) {
             disabled={loading || !newComment.trim()}
             className="flex items-center justify-center space-x-2 w-full sm:w-auto px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base transition-colors"
           >
-            <Send className="h-4 w-4" />
-            <span>Post Comment</span>
+            {loading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Send className="h-4 w-4" />
+            )}
+            <span>{loading ? 'Posting...' : 'Post Comment'}</span>
           </button>
         </form>
       )}
@@ -194,9 +203,17 @@ export default function CommentSection({ workId }: CommentSectionProps) {
                   {user?._id === comment.user._id && (
                     <button
                       onClick={() => handleDeleteComment(comment._id)}
-                      className="text-xs sm:text-sm text-red-600 hover:text-red-700"
+                      disabled={deletingCommentId === comment._id}
+                      className="text-xs sm:text-sm text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
                     >
-                      Delete
+                      {deletingCommentId === comment._id ? (
+                        <>
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                          <span>Deleting...</span>
+                        </>
+                      ) : (
+                        <span>Delete</span>
+                      )}
                     </button>
                   )}
                 </div>
@@ -213,10 +230,17 @@ export default function CommentSection({ workId }: CommentSectionProps) {
                     <div className="flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={() => handleSubmitReply(comment._id)}
-                        disabled={loading || !replyContent.trim()}
-                        className="px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 text-xs sm:text-sm transition-colors"
+                        disabled={submittingReplyId === comment._id || !replyContent.trim()}
+                        className="px-3 py-1.5 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm transition-colors flex items-center space-x-1"
                       >
-                        Reply
+                        {submittingReplyId === comment._id ? (
+                          <>
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            <span>Replying...</span>
+                          </>
+                        ) : (
+                          <span>Reply</span>
+                        )}
                       </button>
                       <button
                         onClick={() => {
@@ -264,9 +288,17 @@ export default function CommentSection({ workId }: CommentSectionProps) {
                             {user?._id === reply.user._id && (
                               <button
                                 onClick={() => handleDeleteComment(reply._id)}
-                                className="mt-1 text-xs text-red-600 hover:text-red-700"
+                                disabled={deletingCommentId === reply._id}
+                                className="mt-1 text-xs text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
                               >
-                                Delete
+                                {deletingCommentId === reply._id ? (
+                                  <>
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                    <span>Deleting...</span>
+                                  </>
+                                ) : (
+                                  <span>Delete</span>
+                                )}
                               </button>
                             )}
                           </div>
