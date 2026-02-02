@@ -3,6 +3,9 @@ const withPWA = require('next-pwa')({
   register: true,
   skipWaiting: true,
   disable: process.env.NODE_ENV === 'development',
+  // Enable PWA in development for testing (set to false to disable)
+  // Note: PWA requires HTTPS in production, but works on localhost
+  buildExcludes: [/app-manifest\.json$/],
 });
 
 /** @type {import('next').NextConfig} */
