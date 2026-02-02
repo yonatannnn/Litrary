@@ -1,0 +1,43 @@
+{
+  "name": "Litrary - A Platform for Writers and Readers",
+  "short_name": "Litrary",
+  "description": "Share your poems and short stories, discover great writing, and connect with fellow writers and readers.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["books", "social", "entertainment"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Create Work",
+      "short_name": "Create",
+      "description": "Create a new poem or short story",
+      "url": "/create",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Feed",
+      "short_name": "Feed",
+      "description": "View your feed",
+      "url": "/",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}
+
