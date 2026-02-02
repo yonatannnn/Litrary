@@ -53,13 +53,13 @@ export async function POST(
     }
 
     // Create follow relationship
-    const follow: Follow = {
+    const follow: Omit<Follow, '_id'> = {
       followerId,
       followingId: params.id,
       createdAt: new Date(),
     };
 
-    await db.collection('follows').insertOne(follow);
+    await db.collection('follows').insertOne(follow as any);
 
     return NextResponse.json({ message: 'Successfully followed user' });
   } catch (error) {

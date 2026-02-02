@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
-    const user: User = {
+    const user: Omit<User, '_id'> = {
       username,
       displayName,
       email,
@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       totalWorks: 0,
     };
 
-    const result = await db.collection('users').insertOne(user);
+    const result = await db.collection('users').insertOne(user as any);
 
     // Generate token
     const token = generateToken({

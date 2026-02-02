@@ -131,14 +131,21 @@ export async function PUT(
 
     const updatedUser = await db
       .collection('users')
-      .findOne({ _id: new ObjectId(params.id) });
+      .findOne({ _id: new ObjectId(params.id) }) as any;
 
-    const { password: _, ...userWithoutPassword } = updatedUser || {};
+    if (!updatedUser) {
+      return NextResponse.json(
+        { error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    const { password: _, ...userWithoutPassword } = updatedUser;
 
     return NextResponse.json({
       user: {
         ...userWithoutPassword,
-        _id: updatedUser?._id.toString(),
+        _id: updatedUser._id.toString(),
       },
     });
   } catch (error) {

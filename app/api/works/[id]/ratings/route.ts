@@ -50,7 +50,7 @@ export async function POST(
     if (existingRating) {
       // Update existing rating
       await db.collection('ratings').updateOne(
-        { _id: existingRating._id },
+        { _id: new ObjectId(existingRating._id as string) },
         {
           $set: {
             rating,
@@ -60,14 +60,14 @@ export async function POST(
       );
     } else {
       // Create new rating
-      const newRating: Rating = {
+      const newRating: Omit<Rating, '_id'> = {
         workId: params.id,
         userId,
         rating,
         createdAt: new Date(),
         updatedAt: new Date(),
       };
-      await db.collection('ratings').insertOne(newRating);
+      await db.collection('ratings').insertOne(newRating as any);
     }
 
     // Recalculate average rating for the work
