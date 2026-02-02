@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import AvatarUpload from '@/components/AvatarUpload';
 
@@ -74,7 +74,7 @@ export default function EditProfilePage() {
       return;
     }
 
-    setLoading(true);
+    setLoading(true); // Set loading immediately
     try {
       const response = await fetch(`/api/users/${params.id}`, {
         method: 'PUT',
@@ -185,9 +185,10 @@ export default function EditProfilePage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full sm:flex-1 py-3 px-6 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
+              className="w-full sm:flex-1 py-3 px-6 bg-primary-600 text-white rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm sm:text-base flex items-center justify-center space-x-2"
             >
-              {loading ? 'Saving...' : 'Save Changes'}
+              {loading && <Loader2 className="h-4 w-4 animate-spin" />}
+              <span>{loading ? 'Saving...' : 'Save Changes'}</span>
             </button>
             <Link
               href={`/profile/${params.id}`}
