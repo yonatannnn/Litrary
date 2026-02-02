@@ -238,7 +238,7 @@ export default function ProfilePage() {
           <div className="text-center py-8 sm:py-12 bg-white dark:bg-slate-800 rounded-lg shadow px-4">
             <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base">
               {isOwnProfile
-                ? "You haven't published any works yet."
+                ? "You haven&apos;t published any works yet."
                 : 'This user has not published any works yet.'}
             </p>
             {isOwnProfile && (

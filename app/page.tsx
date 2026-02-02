@@ -84,7 +84,7 @@ export default function Home() {
         <div className="text-center py-12">
           <p className="text-gray-600 dark:text-gray-400 text-lg">
             {feedType === 'following'
-              ? "You're not following anyone yet. Start following writers to see their works here!"
+              ? "You&apos;re not following anyone yet. Start following writers to see their works here!"
               : 'No works found. Be the first to publish!'}
           </p>
           {user && (
