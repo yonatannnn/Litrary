@@ -8,7 +8,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkBreaks from 'remark-breaks';
 import RatingComponent from '@/components/RatingComponent';
 import CommentSection from '@/components/CommentSection';
-import { Trash2, Edit, ArrowLeft } from 'lucide-react';
+import { Trash2, Edit, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 
 interface Work {
@@ -58,7 +58,7 @@ export default function WorkDetailPage() {
   const handleDelete = async () => {
     if (!confirm('Are you sure you want to delete this work?')) return;
 
-    setDeleting(true);
+    setDeleting(true); // Set loading immediately
     try {
       const response = await fetch(`/api/works/${params.id}`, {
         method: 'DELETE',
@@ -161,10 +161,14 @@ export default function WorkDetailPage() {
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
-                  className="p-2 text-red-600 hover:text-red-700 disabled:opacity-50"
+                  className="p-2 text-red-600 hover:text-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
                   title="Delete"
                 >
-                  <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                  {deleting ? (
+                    <Loader2 className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-4 w-4 sm:h-5 sm:w-5" />
+                  )}
                 </button>
               </>
             )}
