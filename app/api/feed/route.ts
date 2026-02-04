@@ -27,18 +27,22 @@ export async function GET(req: NextRequest) {
         query.authorId = { $in: followingIds };
       } else {
         // User follows no one, return empty feed
-        return NextResponse.json({ works: [] });
+        return NextResponse.json({ works: [], hasMore: false });
       }
     }
 
     // Get works
-    const works = await db
+    // Fetch one extra record to determine whether more pages exist
+    const worksPlusOne = await db
       .collection('works')
       .find(query)
       .sort({ createdAt: -1 })
-      .limit(limit)
+      .limit(limit + 1)
       .skip(skip)
       .toArray();
+
+    const hasMore = worksPlusOne.length > limit;
+    const works = hasMore ? worksPlusOne.slice(0, limit) : worksPlusOne;
 
     // Populate author info and calculate trending score
     const worksWithAuthors = await Promise.all(
@@ -82,12 +86,9 @@ export async function GET(req: NextRequest) {
       })
     );
 
-    // Sort by trending score if global feed
-    if (type === 'global') {
-      worksWithAuthors.sort((a, b) => b.trendingScore - a.trendingScore);
-    }
-
-    return NextResponse.json({ works: worksWithAuthors });
+    // NOTE: We intentionally do not re-sort by trendingScore here because it breaks
+    // pagination consistency (sorting must happen before skip/limit).
+    return NextResponse.json({ works: worksWithAuthors, hasMore });
   } catch (error) {
     console.error('Get feed error:', error);
     return NextResponse.json(

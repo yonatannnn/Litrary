@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import WorkCard from '@/components/WorkCard';
-import { BookOpen, Users } from 'lucide-react';
+import { BookOpen, Loader2, Users } from 'lucide-react';
 import Link from 'next/link';
 import { Work } from '@/types/work';
 
@@ -12,15 +12,28 @@ export default function Home() {
   const [works, setWorks] = useState<Work[]>([]);
   const [feedType, setFeedType] = useState<'global' | 'following'>('global');
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const requestIdRef = useRef(0);
+  const PAGE_SIZE = 18;
 
   useEffect(() => {
-    fetchFeed();
+    // Reset and load first page when feed type changes
+    setWorks([]);
+    setHasMore(true);
+    fetchFeed({ reset: true });
   }, [feedType, token]);
 
-  const fetchFeed = async () => {
-    setLoading(true);
+  const fetchFeed = async ({ reset }: { reset: boolean }) => {
+    const reqId = ++requestIdRef.current;
+    const nextSkip = reset ? 0 : works.length;
+    if (reset) {
+      setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
     try {
-      const url = `/api/feed?type=${feedType}`;
+      const url = `/api/feed?type=${feedType}&limit=${PAGE_SIZE}&skip=${nextSkip}`;
       const headers: HeadersInit = {};
       if (token) {
         headers.Authorization = `Bearer ${token}`;
@@ -29,13 +42,30 @@ export default function Home() {
       const response = await fetch(url, { headers });
       if (response.ok) {
         const data = await response.json();
-        setWorks(data.works);
+        // Ignore out-of-order responses (e.g., switching feedType quickly)
+        if (reqId !== requestIdRef.current) return;
+        const newWorks: Work[] = data.works || [];
+        setHasMore(Boolean(data.hasMore));
+        setWorks((prev) => (reset ? newWorks : [...prev, ...newWorks]));
       }
     } catch (error) {
       console.error('Error fetching feed:', error);
     } finally {
-      setLoading(false);
+      if (reset) setLoading(false);
+      setLoadingMore(false);
     }
+  };
+
+  const handleToggleFeed = (type: 'global' | 'following') => {
+    if (type === feedType) return;
+    // Immediate feedback
+    setLoading(true);
+    setFeedType(type);
+  };
+
+  const handleLoadMore = async () => {
+    if (loadingMore || loading || !hasMore) return;
+    await fetchFeed({ reset: false });
   };
 
   return (
@@ -52,7 +82,7 @@ export default function Home() {
       {user && (
         <div className="mb-4 sm:mb-6 flex flex-col sm:flex-row gap-2 sm:gap-4">
           <button
-            onClick={() => setFeedType('global')}
+            onClick={() => handleToggleFeed('global')}
             className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center ${
               feedType === 'global'
                 ? 'bg-primary-600 text-white'
@@ -63,7 +93,7 @@ export default function Home() {
             Global Feed
           </button>
           <button
-            onClick={() => setFeedType('following')}
+            onClick={() => handleToggleFeed('following')}
             className={`px-4 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center ${
               feedType === 'following'
                 ? 'bg-primary-600 text-white'
@@ -97,10 +127,29 @@ export default function Home() {
           )}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-          {works.map((work) => (
-            <WorkCard key={work._id} work={work} />
-          ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+            {works.map((work) => (
+              <WorkCard key={work._id} work={work} />
+            ))}
+          </div>
+
+          <div className="flex justify-center">
+            {hasMore ? (
+              <button
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="px-6 py-3 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+              >
+                {loadingMore && <Loader2 className="h-4 w-4 animate-spin" />}
+                <span>{loadingMore ? 'Loading...' : 'Load more'}</span>
+              </button>
+            ) : (
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                You&apos;ve reached the end.
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>
