@@ -3,6 +3,9 @@ import { getDb } from '@/lib/mongodb';
 import { generateToken } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
+
+export const dynamic = 'force-dynamic';
+
 export async function POST(req: NextRequest) {
   try {
     const { username, password } = await req.json();
