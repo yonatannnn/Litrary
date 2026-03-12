@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDb } from '@/lib/mongodb';
 import { getUserIdFromRequest } from '@/lib/auth';
-import { ObjectId } from 'mongodb';
 
 
 export const dynamic = 'force-dynamic';
@@ -16,6 +15,7 @@ export async function GET(req: NextRequest) {
     const skip = parseInt(searchParams.get('skip') || '0');
 
     const db = await getDb();
+    const now = new Date();
 
     let query: any = {};
 
@@ -35,60 +35,77 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // Get works
-    // Fetch one extra record to determine whether more pages exist
+    // Get works (with author lookup + trending score) in one aggregation.
+    // Fetch one extra record to determine whether more pages exist.
     const worksPlusOne = await db
       .collection('works')
-      .find(query)
-      .sort({ createdAt: -1 })
-      .limit(limit + 1)
-      .skip(skip)
+      .aggregate([
+        { $match: query },
+        { $sort: { createdAt: -1 } },
+        { $skip: skip },
+        { $limit: limit + 1 },
+        {
+          $addFields: {
+            authorObjId: {
+              $convert: {
+                input: '$authorId',
+                to: 'objectId',
+                onError: null,
+                onNull: null,
+              },
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: 'users',
+            let: { authorId: '$authorObjId' },
+            pipeline: [
+              { $match: { $expr: { $eq: ['$_id', '$$authorId'] } } },
+              { $project: { username: 1, displayName: 1, avatar: 1 } },
+            ],
+            as: 'author',
+          },
+        },
+        {
+          $addFields: {
+            author: { $ifNull: [{ $first: '$author' }, null] },
+            daysSinceCreation: {
+              $divide: [{ $subtract: [now, '$createdAt'] }, 1000 * 60 * 60 * 24],
+            },
+          },
+        },
+        {
+          $addFields: {
+            trendingScore: {
+              $subtract: [
+                {
+                  $multiply: [
+                    { $ifNull: ['$averageRating', 0] },
+                    { $ifNull: ['$totalRatings', 0] },
+                  ],
+                },
+                { $multiply: ['$daysSinceCreation', 0.1] },
+              ],
+            },
+          },
+        },
+        { $project: { authorObjId: 0, daysSinceCreation: 0 } },
+      ])
       .toArray();
 
     const hasMore = worksPlusOne.length > limit;
     const works = hasMore ? worksPlusOne.slice(0, limit) : worksPlusOne;
-
-    // Populate author info and calculate trending score
-    const worksWithAuthors = await Promise.all(
-      works.map(async (work) => {
-        let author = null;
-        try {
-          if (work.authorId) {
-            author = await db
-              .collection('users')
-              .findOne({ _id: new ObjectId(work.authorId) });
-            if (!author) {
-              console.warn(`Author not found for work ${work._id}, authorId: ${work.authorId}`);
-            }
+    const worksWithAuthors = works.map((work: any) => ({
+      ...work,
+      _id: work._id.toString(),
+      author: work.author
+        ? {
+            ...work.author,
+            _id: work.author._id.toString(),
           }
-        } catch (error) {
-          console.error(`Error fetching author for work ${work._id}:`, error, `authorId: ${work.authorId}`);
-          // Author will remain null if ObjectId conversion fails
-        }
-
-        // Calculate trending score (recent works with high ratings get boost)
-        const daysSinceCreation =
-          (Date.now() - new Date(work.createdAt).getTime()) /
-          (1000 * 60 * 60 * 24);
-        const trendingScore =
-          (work.averageRating || 0) * (work.totalRatings || 0) -
-          daysSinceCreation * 0.1;
-
-        return {
-          ...work,
-          _id: work._id.toString(),
-          author: author
-            ? {
-                _id: author._id.toString(),
-                username: author.username,
-                displayName: author.displayName,
-                avatar: author.avatar,
-              }
-            : null,
-          trendingScore,
-        };
-      })
-    );
+        : null,
+    }));
 
     // NOTE: We intentionally do not re-sort by trendingScore here because it breaks
     // pagination consistency (sorting must happen before skip/limit).
@@ -101,4 +118,3 @@ export async function GET(req: NextRequest) {
     );
   }
 }
-

@@ -119,14 +119,14 @@ export default function WorkDetailPage() {
         Back to feed
       </Link>
 
-      <article className="bg-white dark:bg-slate-800 rounded-xl shadow-lg p-4 sm:p-6 md:p-8">
-        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0 mb-4 sm:mb-6">
+      <article className="bg-white dark:bg-slate-800 rounded-2xl shadow-lg p-4 sm:p-6 md:p-8 border border-slate-100 dark:border-slate-700/60">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0 mb-5 sm:mb-7">
           <div className="flex items-center space-x-3 sm:space-x-4">
             {work.author.avatar ? (
               <img
                 src={work.author.avatar}
                 alt={work.author.displayName}
-                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full ring-2 ring-slate-200 dark:ring-slate-700"
+                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full ring-2 ring-slate-200 dark:ring-slate-700 shadow-sm"
               />
             ) : (
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white text-sm sm:text-base font-semibold shadow-sm">
@@ -146,7 +146,7 @@ export default function WorkDetailPage() {
             </div>
           </div>
           <div className="flex items-center space-x-2">
-            <span className="px-2 sm:px-3 py-1 text-xs sm:text-sm font-medium rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
+            <span className="px-2.5 sm:px-3 py-1 text-xs sm:text-sm font-medium rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800">
               {work.type === 'poem' ? 'Poem' : 'Short Story'}
             </span>
             {isAuthor && (
@@ -189,24 +189,26 @@ export default function WorkDetailPage() {
           )}
         </div>
 
-        {work.type === 'poem' ? (
-          <div className="prose prose-sm sm:prose-base lg:prose-lg dark:prose-invert max-w-none mb-6 sm:mb-8">
-            <div 
-              className="whitespace-pre-line leading-relaxed text-slate-900 dark:text-slate-50 font-serif text-sm sm:text-base lg:text-lg"
-              style={{ 
-                lineHeight: '1.8'
-              }}
-            >
-              {work.content.replace(/\n{3,}/g, '\n\n')}
+        <section className="mt-5 sm:mt-7">
+          {work.type === 'poem' ? (
+            <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-xl p-5 sm:p-7">
+              <div
+                className="whitespace-pre-wrap text-slate-900 dark:text-slate-50 font-serif text-base sm:text-lg lg:text-xl leading-relaxed tracking-wide max-w-2xl sm:max-w-3xl mx-auto"
+                style={{ lineHeight: '1.9' }}
+              >
+                {work.content.replace(/\n{3,}/g, '\n\n')}
+              </div>
             </div>
-          </div>
-        ) : (
-          <div className="prose prose-sm sm:prose-base lg:prose-lg dark:prose-invert max-w-none mb-6 sm:mb-8">
-            <ReactMarkdown remarkPlugins={[remarkBreaks]}>
-              {work.content}
-            </ReactMarkdown>
-          </div>
-        )}
+          ) : (
+            <div className="bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-700 rounded-xl p-5 sm:p-7">
+              <div className="prose prose-sm sm:prose-base lg:prose-lg dark:prose-invert max-w-3xl mx-auto prose-p:leading-relaxed prose-p:text-slate-800 dark:prose-p:text-slate-200">
+                <ReactMarkdown remarkPlugins={[remarkBreaks]}>
+                  {work.content}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
+        </section>
 
         <div className="border-t border-slate-200 dark:border-slate-700 pt-6 sm:pt-8 mt-6 sm:mt-8">
           <RatingComponent workId={work._id} />
@@ -219,4 +221,3 @@ export default function WorkDetailPage() {
     </div>
   );
 }
-
